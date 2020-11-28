@@ -1,0 +1,17 @@
+version: '3'
+services:
+  db:
+    image: postgis/postgis
+    environment:
+      POSTGRES_DB: seating
+      POSTGRES_PASSWORD: secret
+  backend:
+    depends_on: [db]
+    build:
+      context: backend
+      dockerfile: Dockerfile.dev
+    ports: ['8080:8080']
+    environment:
+      DB_URL: postgres://postgres:secret@db:5432/seating
+    volumes:
+      - ./backend:/usr/src/app

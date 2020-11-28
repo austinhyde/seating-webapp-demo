@@ -1,0 +1,12 @@
+FROM golang:1.15-alpine
+WORKDIR /usr/src/app
+
+# need git for `go get`
+RUN apk add --no-cache git
+
+# reflex reruns commands when a file changes
+RUN go get github.com/cespare/reflex
+
+# restart server on given host:port when any file in CWD changes
+# note: using --glob causes weird behavior where it doesn't restart the server
+CMD reflex --start-service --decoration=none -- go run ./cmd/server :8080

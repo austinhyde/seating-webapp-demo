@@ -1,0 +1,19 @@
+#!/bin/bash
+set -e -o pipefail
+cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1
+
+
+function start { #: starts dev servers
+  docker-compose up -d --build && docker-compose logs -f
+}
+
+function stop { #: stops dev servers
+  docker-compose stop
+}
+
+
+if [[ $# -eq 0 || "$1" == "help" ]]; then
+  sed -En 's/^function (.*) {( #)?/\1/p' "$0"
+else
+  "$@"
+fi
