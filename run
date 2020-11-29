@@ -3,12 +3,16 @@ set -e -o pipefail
 cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1
 
 
-function start { #: starts dev servers
-  docker-compose up -d --build && docker-compose logs -f
+function start { # [...frontend|backend|db]: builds & starts dev servers (detached)
+  docker-compose up -d --build "$@" && logs "$@"
 }
 
-function stop { #: stops dev servers
-  docker-compose stop
+function logs { # [...frontend|backend|db]: tails logs of dev servers
+  docker-compose logs -f "$@"
+}
+
+function stop { # [...frontend|backend|db]: stops dev servers
+  docker-compose stop "$@"
 }
 
 

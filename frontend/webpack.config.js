@@ -47,6 +47,9 @@ module.exports = (env, argv) => {
     plugins: [
       new HtmlWebpackPlugin({title: 'Seating', alwaysWriteToDisk: true}),
       new HtmlWebpackHarddiskPlugin(),
+      new webpack.DefinePlugin({
+        MAPBOX_TOKEN: JSON.stringify(process.env.MAPBOX_TOKEN),
+      })
     ]
   };
 

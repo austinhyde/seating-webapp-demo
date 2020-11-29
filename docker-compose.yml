@@ -6,7 +6,7 @@ services:
       POSTGRES_DB: seating
       POSTGRES_PASSWORD: secret
   backend:
-    depends_on: [db, frontend]
+    depends_on: [db, frontend] # TODO wait for these to become available
     build:
       context: backend
       dockerfile: Dockerfile.dev
@@ -21,5 +21,12 @@ services:
       context: frontend
       dockerfile: Dockerfile.dev
     ports: ['8081:8081']
+    env_file: [.env]
     volumes:
-      - ./frontend:/usr/src/app
+      # need to manually exclude node_modules, as it contains platform-specific binaries
+      - ./frontend/src:/usr/src/app/src
+      - ./frontend/static:/usr/src/app/static
+      - ./frontend/.babelrc:/usr/src/app/.babelrc
+      - ./frontend/package-lock.json:/usr/src/app/package-lock.json
+      - ./frontend/package.json:/usr/src/app/package.json
+      - ./frontend/webpack.config.js:/usr/src/app/webpack.config.js
