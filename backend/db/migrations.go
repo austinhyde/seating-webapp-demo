@@ -24,7 +24,7 @@ var migrations = map[int]string{
 		CREATE TABLE location (
 			id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
 			name text NOT NULL,
-			location geometry(point, 4326),
+			location geometry(point, 4326)
 		)
 	`,
 }

@@ -2,55 +2,73 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
-	"github.com/austinhyde/seating/db"
-
 	"github.com/alexflint/go-arg"
-	"github.com/jackc/pgx/v4"
-	"github.com/jackc/pgx/v4/log/zerologadapter"
+	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/rs/zerolog"
+
+	"github.com/austinhyde/seating/db"
 )
 
-type Args struct {
-	DatabaseURL string `arg:"env:DB_URL,required"`
+const assetsDir = "static"
+const indexHTML = assetsDir + "/index.html"
 
-	HostPort string `arg:"positional,required"`
+var args struct {
+	DatabaseURL string `arg:"env:DB_URL,required"`
+	HostPort    string `arg:"positional,required"`
 }
+var log *zerolog.Logger
+var conn *pgxpool.Pool
+var mainCtx context.Context
 
 func main() {
-	args := Args{}
 	arg.MustParse(&args)
 
-	logger := zerolog.New(zerolog.NewConsoleWriter())
-	log := &logger
+	mainCtx = context.Background()
+	log = getLogger()
 
-	mainCtx := context.Background()
-
-	dbcfg, err := pgxpool.ParseConfig(args.DatabaseURL)
-	if err != nil {
-		log.Fatal().Err(err).Msg("Unable to parse db config")
-	}
-	dbcfg.ConnConfig.Logger = zerologadapter.NewLogger(logger)
-	dbcfg.ConnConfig.LogLevel = pgx.LogLevelTrace
-
-	conn, err := pgxpool.Connect(mainCtx, args.DatabaseURL)
-	if err != nil {
-		log.Fatal().Err(err).Msg("Unable to connect to database")
-	}
+	conn = getDatabaseConnection(mainCtx, log, args.DatabaseURL)
 	defer conn.Close()
 
-	err = db.ApplyMigrations(mainCtx, log, conn)
-	if err != nil {
-		log.Fatal().Err(err).Msg("Unable to apply migrations")
-	}
+	err := db.ApplyMigrations(mainCtx, log, conn)
+	maybeFatal(err, "Unable to apply migrations")
 
-	http.HandleFunc("/", HelloServer)
-	_ = http.ListenAndServe(args.HostPort, nil)
+	startServer()
 }
 
-func HelloServer(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello world, %s!", r.URL.Path[1:])
+func maybeFatal(err error, msg string) {
+	if err != nil {
+		log.Fatal().Err(err).Msg(msg)
+	}
+}
+
+func startServer() {
+	m := mux.NewRouter()
+	m.Use(httpLogger(log))
+	// m.PathPrefix("/api").Handler(
+	// 	http.StripPrefix(
+	// 		"/api",
+	// 		getAPIRoutes(),
+	// 	),
+	// )
+	m.PathPrefix("/static").Handler(
+		http.StripPrefix(
+			"/static",
+			http.FileServer(http.Dir(assetsDir)),
+		),
+	)
+	m.PathPrefix("/").Handler(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			http.ServeFile(w, r, indexHTML)
+		}),
+	)
+
+	s := &http.Server{
+		Addr:    args.HostPort,
+		Handler: m,
+	}
+	log.Info().Str("listen", args.HostPort).Msg("starting http server")
+	log.Warn().Err(s.ListenAndServe()).Msg("http server shutdown")
 }
