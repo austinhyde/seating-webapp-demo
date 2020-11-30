@@ -4,6 +4,9 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/austinhyde/seating/api/httpjson"
+	"github.com/austinhyde/seating/service"
+
 	"github.com/alexflint/go-arg"
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -35,7 +38,10 @@ func main() {
 	err := db.ApplyMigrations(mainCtx, log, conn)
 	maybeFatal(err, "Unable to apply migrations")
 
-	startServer()
+	service := &service.SeatingService{conn}
+	httpJsonApi := &httpjson.HttpJsonApi{log, service}
+
+	startServer(httpJsonApi)
 }
 
 func maybeFatal(err error, msg string) {
@@ -44,26 +50,14 @@ func maybeFatal(err error, msg string) {
 	}
 }
 
-func startServer() {
+func startServer(httpJsonApi *httpjson.HttpJsonApi) {
 	m := mux.NewRouter()
 	m.Use(httpLogger(log))
-	// m.PathPrefix("/api").Handler(
-	// 	http.StripPrefix(
-	// 		"/api",
-	// 		getAPIRoutes(),
-	// 	),
-	// )
-	m.PathPrefix("/static").Handler(
-		http.StripPrefix(
-			"/static",
-			http.FileServer(http.Dir(assetsDir)),
-		),
-	)
-	m.PathPrefix("/").Handler(
-		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			http.ServeFile(w, r, indexHTML)
-		}),
-	)
+	m.PathPrefix("/api").Handler(http.StripPrefix("/api", httpJsonApi.GetHttpHandler()))
+	m.PathPrefix("/static").Handler(http.StripPrefix("/static", http.FileServer(http.Dir(assetsDir))))
+	m.PathPrefix("/").Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, indexHTML)
+	}))
 
 	s := &http.Server{
 		Addr:    args.HostPort,

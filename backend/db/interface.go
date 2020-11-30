@@ -8,6 +8,7 @@ import (
 )
 
 type Queryable interface {
+	Query(ctx context.Context, sql string, params ...interface{}) (pgx.Rows, error)
 	QueryRow(ctx context.Context, sql string, params ...interface{}) pgx.Row
 	Exec(ctx context.Context, sql string, params ...interface{}) (pgconn.CommandTag, error)
 }
@@ -15,4 +16,8 @@ type Queryable interface {
 type Transactable interface {
 	Queryable
 	Begin(ctx context.Context) (pgx.Tx, error)
+}
+
+type Scannable interface {
+	Scan(...interface{}) error
 }

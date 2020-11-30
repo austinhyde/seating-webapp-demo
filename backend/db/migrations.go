@@ -27,6 +27,60 @@ var migrations = map[int]string{
 			location geometry(point, 4326)
 		)
 	`,
+	3: `
+		ALTER TABLE location
+			ADD COLUMN description text NOT NULL DEFAULT '',
+			ADD COLUMN created_at timestamptz NOT NULL DEFAULT NOW(),
+			ALTER COLUMN location SET NOT NULL;
+
+		CREATE INDEX ON location USING GIST (location);
+
+		CREATE TABLE floorplan (
+			id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+			location_id uuid NOT NULL REFERENCES location (id),
+			created_at timestamptz NOT NULL,
+			name text NOT NULL,
+			display_after_id uuid NULL REFERENCES floorplan (id)
+		);
+
+		CREATE TABLE desk (
+			id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+			floorplan_id uuid NOT NULL REFERENCES floorplan (id),
+			created_at timestamptz NOT NULL,
+			shape box NOT NULL
+		);
+
+		CREATE TABLE person (
+			id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+			created_at timestamptz NOT NULL,
+			name text NOT NULL,
+			pic_url text NOT NULL
+		);
+
+		CREATE TABLE desk_assignment (
+			desk_id uuid NOT NULL REFERENCES desk (id),
+			person_id uuid NOT NULL REFERENCES person (id),
+			created_at timestamptz NOT NULL,
+			PRIMARY KEY (desk_id, person_id)
+		);
+	`,
+	4: `
+		ALTER TABLE person
+			ALTER COLUMN pic_url DROP NOT NULL;
+	`,
+	5: `
+		ALTER TABLE location
+			ADD COLUMN modified_at timestamptz NOT NULL DEFAULT NOW();
+		
+		ALTER TABLE floorplan
+			ADD COLUMN modified_at timestamptz NOT NULL DEFAULT NOW();
+		
+		ALTER TABLE desk
+			ADD COLUMN modified_at timestamptz NOT NULL DEFAULT NOW();
+		
+		ALTER TABLE person
+			ADD COLUMN modified_at timestamptz NOT NULL DEFAULT NOW();
+	`,
 }
 
 // GetCurrentMigrationVersion returns the last applied migration number
