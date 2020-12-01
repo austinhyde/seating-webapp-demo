@@ -2,11 +2,28 @@
 
 This is a simple demo webapp.
 
-- Users can create office locations
-- Each location has one or more floorplans
-- Each floorplan has several desks
-- Users can be assigned to a desk
-- Users can search for specific users and navigate locations
+- Users can create office locations and view them on a global map
+- Users can create one or more floorplans for each location, and pan/zoom around them
+- Each floorplan has several desks, and users can be assigned to those desks
+- Users can search for specific people to see where they sit
+
+This project serves multiple purposes for me:
+
+- It's a good small-scale representation of the non-public web application work I've done, in terms of application architecture and various machinery around it
+- It's a low-stakes application with a well-defined feature set that I can experiment with different architectures/frameworks/languages/etc in. I have a number of different "experiments" I want to mess with or refine over time
+- It's a good baseline/boilerplate for other applications. Once I settle on specific implementation details, I hope to extract the core boilerplate into a standalone repo for copy+paste in new applications
+
+To do list:
+- [x] Set up docker development environment
+- [x] Set up migrations, core db schema
+- [x] Set up rough backend framework, a few example API endpoints
+- [x] Set up rough frontend structure, some basic interaction
+- [ ] Implement all API endpoints
+- [ ] Implement all core functionality in UI
+- [ ] Refine API -> Service -> DB layers and responsibilities
+- [ ] Refine UI state management
+- [ ] Refine database change management approach
+- [ ] ...?
 
 ## Running
 
