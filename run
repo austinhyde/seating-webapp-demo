@@ -8,7 +8,7 @@ function start { # [...frontend|backend|db]: builds & starts dev servers (detach
 }
 
 function logs { # [...frontend|backend|db]: tails logs of dev servers
-  docker-compose logs -f "$@"
+  docker-compose logs -f --tail 100 "$@"
 }
 
 function stop { # [...frontend|backend|db]: stops dev servers
@@ -17,6 +17,10 @@ function stop { # [...frontend|backend|db]: stops dev servers
 
 function psql { #: opens a psql session with the dev database
   docker-compose exec db psql seating postgres
+}
+
+function npm { #: runs npm inside a running frontend container, for e.g. installing dependencies
+  docker-compose exec frontend npm "$@"
 }
 
 if [[ $# -eq 0 || "$1" == "help" ]]; then

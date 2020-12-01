@@ -1,19 +1,9 @@
-import React from 'react';
-import { hot } from 'react-hot-loader/root';
+import {hot} from 'react-hot-loader/root';
+
+import AppShell from './components/AppShell';
 
 import 'fomantic-ui-css/semantic.min.css';
+import 'mapbox-gl/dist/mapbox-gl.css';
 import './styles.scss';
 
-import AppMenu from './AppMenu';
-import Map from './Map';
-
-const Root = () => {
-  return (
-    <div className="app-shell">
-      <AppMenu/>
-      <Map/>
-    </div>
-  )
-};
-
-export default hot(Root);
+export default hot(AppShell);

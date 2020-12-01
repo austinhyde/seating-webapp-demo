@@ -1,11 +1,14 @@
 import React from 'react';
 import {Menu, Icon, Input, Dropdown} from 'semantic-ui-react';
 
-export default function AppMenu() {
-  const locations = [
-    {key: '1', value: '1', text: 'Pittsburgh'},
-    {key: '2', value: '2', text: 'San Francisco'},
-  ];
+export default function AppMenu({locations, selectedLocation, onSelectLocation}) {
+  const locationOptions = locations.map(loc => ({
+    key: loc.id,
+    value: loc.id,
+    text: loc.name,
+  }));
+
+  const locationDropdownChanged = (ev, {value}) => onSelectLocation(locations.find(l => l.id === value));
 
   const users = [
     {key: '1', value: '1', text: 'Jack O\'Neill'},
@@ -24,7 +27,9 @@ export default function AppMenu() {
             placeholder="Select Location"
             search
             selection
-            options={locations}
+            options={locationOptions}
+            onChange={locationDropdownChanged}
+            value={selectedLocation && selectedLocation.id}
           />
         </Menu.Item>
         <Menu.Item className="inline-menu-search">

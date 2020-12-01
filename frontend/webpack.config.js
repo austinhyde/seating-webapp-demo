@@ -2,6 +2,7 @@ const path = require('path');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const HtmlWebpackHarddiskPlugin = require('html-webpack-harddisk-plugin');
+const HtmlWebpackInjectAttributesPlugin = require('html-webpack-inject-attributes-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 const publicPath = process.env.PUBLIC_PATH || '/static/';
@@ -17,8 +18,9 @@ module.exports = (env, argv) => {
       path: path.resolve(__dirname, './static'),
       publicPath: publicPath,
       filename: '[name].[hash].js',
+      crossOriginLoading: 'anonymous',
     },
-    devtool: 'eval-source-map',
+    devtool: 'source-map',
     devServer: {
       hot: true,
       port: devPort,
@@ -45,8 +47,14 @@ module.exports = (env, argv) => {
       }
     },
     plugins: [
-      new HtmlWebpackPlugin({title: 'Seating', alwaysWriteToDisk: true}),
+      new HtmlWebpackPlugin({
+        title: 'Seating',
+        alwaysWriteToDisk: true,
+      }),
       new HtmlWebpackHarddiskPlugin(),
+      new HtmlWebpackInjectAttributesPlugin({
+        crossorigin: 'anonymous',
+      }),
       new webpack.DefinePlugin({
         MAPBOX_TOKEN: JSON.stringify(process.env.MAPBOX_TOKEN),
       })
